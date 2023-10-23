@@ -4,10 +4,10 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
+
 from database import Database
 
 kivy.require('1.11.1')
-
 
 class LoginPage(BoxLayout):
     def __init__(self, db, app, **kwargs):
@@ -39,6 +39,7 @@ class LoginPage(BoxLayout):
 
         if self.db.validate_user(user, password):
             self.result.text = 'OK'
+            self.app.show_message_page()
         else:
             self.result.text = 'Not OK'
 
@@ -95,6 +96,45 @@ class SignupPage(BoxLayout):
         back_btn.bind(on_press=self.app.show_start_page)
         self.add_widget(back_btn)
 
+class MessagePage(BoxLayout):
+    def __init__(self, db, app, **kwargs):
+        super(MessagePage, self).__init__(**kwargs)
+        self.orientation = 'vertical'
+        self.db = db
+        self.app = app
+
+        self.add_widget(Label(text='Add a Message'))
+        self.message_input = TextInput(multiline=True)
+        self.add_widget(self.message_input)
+
+        self.add_message_btn = Button(text='Add Message')
+        self.add_message_btn.bind(on_press=self.add_message)
+        self.add_widget(self.add_message_btn)
+
+        self.show_messages_btn = Button(text='Show Messages')
+        self.show_messages_btn.bind(on_press=self.show_messages)
+        self.add_widget(self.show_messages_btn)
+
+        self.messages_label = Label(text='')
+        self.add_widget(self.messages_label)
+
+        self.add_back_button()
+
+    def add_message(self, instance):
+        message = self.message_input.text
+        self.db.add_message(message)
+        self.message_input.text = ''
+        self.show_messages(instance)  # Automatically show messages after adding a new one
+
+    def show_messages(self, instance):
+        messages = self.db.get_messages()
+        self.messages_label.text = '\n'.join(messages)
+
+    def add_back_button(self):
+        back_btn = Button(text='Back')
+        back_btn.bind(on_press=self.app.show_start_page)
+        self.add_widget(back_btn)
+
 class MyApp(App):
     def build(self):
         self.db = Database()
@@ -102,6 +142,7 @@ class MyApp(App):
         self.root = BoxLayout(orientation='vertical')
         self.login_page = LoginPage(self.db, app=self)
         self.signup_page = SignupPage(self.db, app=self)
+        self.message_page = MessagePage(self.db, app=self)
         self.start_page = BoxLayout(orientation='vertical')
 
         self.signin_btn = Button(text='Sign In')
@@ -123,12 +164,13 @@ class MyApp(App):
         self.root.clear_widgets()
         self.root.add_widget(self.signup_page)
 
+    def show_message_page(self):
+        self.root.clear_widgets()
+        self.root.add_widget(self.message_page)
+
     def show_start_page(self, instance):
         self.root.clear_widgets()
         self.root.add_widget(self.start_page)
-
-    def on_stop(self):
-        self.db.close()
 
 if __name__ == '__main__':
     MyApp().run()
