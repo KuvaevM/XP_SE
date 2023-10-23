@@ -8,11 +8,13 @@ from database import Database
 
 kivy.require('1.11.1')
 
+
 class LoginPage(BoxLayout):
-    def __init__(self, db, **kwargs):
+    def __init__(self, db, app, **kwargs):
         super(LoginPage, self).__init__(**kwargs)
         self.orientation = 'vertical'
         self.db = db
+        self.app = app
 
         self.add_widget(Label(text='Login'))
         self.login = TextInput(multiline=False)
@@ -29,6 +31,8 @@ class LoginPage(BoxLayout):
         self.result = Label(text='')
         self.add_widget(self.result)
 
+        self.add_back_button()
+
     def validate_user(self, instance):
         user = self.login.text
         password = self.password.text
@@ -38,11 +42,17 @@ class LoginPage(BoxLayout):
         else:
             self.result.text = 'Not OK'
 
+    def add_back_button(self):
+        back_btn = Button(text='Back to Main Menu')
+        back_btn.bind(on_press=self.app.show_start_page)
+        self.add_widget(back_btn)
+
 class SignupPage(BoxLayout):
-    def __init__(self, db, **kwargs):
+    def __init__(self, db, app, **kwargs):
         super(SignupPage, self).__init__(**kwargs)
         self.orientation = 'vertical'
         self.db = db
+        self.app = app
 
         self.add_widget(Label(text='Login'))
         self.login = TextInput(multiline=False)
@@ -63,6 +73,8 @@ class SignupPage(BoxLayout):
         self.result = Label(text='')
         self.add_widget(self.result)
 
+        self.add_back_button()
+
     def add_user(self, instance):
         user = self.login.text
         password = self.password.text
@@ -78,13 +90,18 @@ class SignupPage(BoxLayout):
             self.db.add_user(user, password)
             self.result.text = 'User registered'
 
+    def add_back_button(self):
+        back_btn = Button(text='Back to Main Menu')
+        back_btn.bind(on_press=self.app.show_start_page)
+        self.add_widget(back_btn)
+
 class MyApp(App):
     def build(self):
         self.db = Database()
 
         self.root = BoxLayout(orientation='vertical')
-        self.login_page = LoginPage(self.db)
-        self.signup_page = SignupPage(self.db)
+        self.login_page = LoginPage(self.db, app=self)
+        self.signup_page = SignupPage(self.db, app=self)
         self.start_page = BoxLayout(orientation='vertical')
 
         self.signin_btn = Button(text='Sign In')
@@ -105,6 +122,10 @@ class MyApp(App):
     def show_signup(self, instance):
         self.root.clear_widgets()
         self.root.add_widget(self.signup_page)
+
+    def show_start_page(self, instance):
+        self.root.clear_widgets()
+        self.root.add_widget(self.start_page)
 
     def on_stop(self):
         self.db.close()
