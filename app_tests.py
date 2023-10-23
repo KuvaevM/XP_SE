@@ -1,50 +1,79 @@
 import unittest
-import pytest
-import sqlite3
-from kivy.tests.common import GraphicUnitTest
-from kivy.uix.textinput import TextInput
-
-from app import Database, SignupPage, MyApp
-
-# Поменяйте на имя вашего файла приложения
-APP_FILENAME = "your_app.py"
+from unittest.mock import Mock
+from app import MyApp
 
 
-class TestRegistrationProcess(GraphicUnitTest):
+class TestMyApp(unittest.TestCase):
+
     def setUp(self):
-        self.app = self.create_app()
-        self.db = Database(':memory:')
-        self.signup_page = SignupPage(self.db)
+        self.app = MyApp()
 
-    def tearDown(self):
-        self.db.close()
+    def test_login_failure(self):
+        self.app.db = Mock()
+        self.app.db.validate_user.return_value = False
 
-    def create_app(self):
-        return MyApp.get_running_app()
+        self.app.build()
+        self.app.show_login(None)
 
-    def test_successful_registration(self):
-        # Ожидается успешная регистрация
-        self.signup_page.login.text = "testuser"
-        self.signup_page.password.text = "password"
-        self.signup_page.repeat_password.text = "password"
+        self.app.login_page.login.text = 'testuser'
+        self.app.login_page.password.text = 'wrongpassword'
+        self.app.login_page.validate_user(None)
 
-        self.signup_page.add_user(None)
-        self.assertEqual(self.signup_page.result.text, 'User registered')
+        self.assertEqual(self.app.login_page.result.text, 'Not OK')
 
-        # Проверяем, что пользователь добавлен в базу данных
-        self.assertTrue(self.db.user_exists("testuser"))
+    def test_signup_failure_user_exists(self):
+        self.app.db = Mock()
+        self.app.db.user_exists.return_value = True
 
-    def test_password_mismatch(self):
-        # Пароли не совпадают
-        self.signup_page.login.text = "testuser"
-        self.signup_page.password.text = "password"
-        self.signup_page.repeat_password.text = "different_password"
+        self.app.build()
+        self.app.show_signup(None)
 
-        self.signup_page.add_user(None)
-        self.assertEqual(self.signup_page.result.text, 'Passwords do not match')
+        self.app.signup_page.login.text = 'existinguser'
+        self.app.signup_page.password.text = 'newpassword'
+        self.app.signup_page.repeat_password.text = 'newpassword'
+        self.app.signup_page.add_user(None)
 
-        # Пользователь не должен быть добавлен в базу данных
-        self.assertFalse(self.db.user_exists("testuser"))
+        self.assertEqual(self.app.signup_page.result.text, 'User already exists')
+
+    def test_signup_failure_password_mismatch(self):
+        self.app.db = Mock()
+        self.app.db.user_exists.return_value = False
+
+        self.app.build()
+        self.app.show_signup(None)
+
+        self.app.signup_page.login.text = 'newuser'
+        self.app.signup_page.password.text = 'newpassword'
+        self.app.signup_page.repeat_password.text = 'differentpassword'
+        self.app.signup_page.add_user(None)
+
+        self.assertEqual(self.app.signup_page.result.text, 'Passwords do not match')
+
+    def test_back_to_main_menu_from_login(self):
+        self.app.db = Mock()
+
+        self.app.build()
+        self.app.show_login(None)
+
+        self.assertIs(self.app.root.children[0], self.app.login_page)
+
+        back_btn = self.app.login_page.children[0]
+        back_btn.dispatch('on_press')
+
+        self.assertIs(self.app.root.children[0], self.app.start_page)
+
+    def test_back_to_main_menu_from_signup(self):
+        self.app.db = Mock()
+
+        self.app.build()
+        self.app.show_signup(None)
+
+        self.assertIs(self.app.root.children[0], self.app.signup_page)
+
+        back_btn = self.app.signup_page.children[0]
+        back_btn.dispatch('on_press')
+
+        self.assertIs(self.app.root.children[0], self.app.start_page)
 
 if __name__ == '__main__':
     unittest.main()
