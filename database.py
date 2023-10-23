@@ -1,13 +1,14 @@
 import sqlite3
 
 class Database:
-    def __init__(self, db_name='users.db'):
+    def init(self, db_name='users.db'):
         self.conn = sqlite3.connect(db_name)
         self.c = self.conn.cursor()
-        self.create_table()
+        self.create_tables()
 
-    def create_table(self):
+    def create_tables(self):
         self.c.execute('CREATE TABLE IF NOT EXISTS users (login TEXT, password TEXT)')
+        self.c.execute('CREATE TABLE IF NOT EXISTS messages (message TEXT)')
         self.conn.commit()
 
     def validate_user(self, user, password):
@@ -21,6 +22,14 @@ class Database:
     def add_user(self, user, password):
         self.c.execute("INSERT INTO users VALUES (?, ?)", (user, password))
         self.conn.commit()
+
+    def add_message(self, message):
+        self.c.execute("INSERT INTO messages VALUES (?)", (message,))
+        self.conn.commit()
+
+    def get_messages(self):
+        self.c.execute("SELECT * FROM messages")
+        return [message[0] for message in self.c.fetchall()]
 
     def close(self):
         self.conn.close()
