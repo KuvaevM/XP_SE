@@ -61,5 +61,9 @@ class Database:
         self.c.execute("DELETE FROM messages WHERE title=? AND message=?", (title, message))
         self.conn.commit()
 
+    def delete_message_by_title(self, title):
+        self.c.execute('DELETE FROM messages WHERE title = ?', (title,))
+        self.conn.commit()
+
     def close(self):
         self.conn.close()
