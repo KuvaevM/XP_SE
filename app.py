@@ -74,6 +74,7 @@ class SignupPage(BoxLayout):
         self.signup_btn.bind(on_press=self.add_user)
         self.add_widget(self.signup_btn)
 
+
         self.result = Label(text='')
         self.add_widget(self.result)
 
@@ -148,6 +149,14 @@ class MessagePage(BoxLayout):
         self.show_messages_btn.bind(on_press=self.show_messages_popup)
         self.add_widget(self.show_messages_btn)
 
+        self.title_input = TextInput(hint_text='Enter message title', size_hint_y=None, height=30)
+        self.add_widget(self.title_input)
+
+        # Create a Delete Button
+        self.delete_button = Button(text='Delete Message')
+        self.delete_button.bind(on_press=self.delete_message)
+        self.add_widget(self.delete_button)
+
         self.messages_label = Label(text='')
         self.add_widget(self.messages_label)
 
@@ -160,6 +169,11 @@ class MessagePage(BoxLayout):
         self.title_input.text = ''
         self.message_input.text = ''
         self.show_messages(instance)
+
+    def delete_message(self, instance):
+        message_title = self.title_input.text
+        self.db.delete_message_by_title(message_title)
+        self.title_input.text = ''
 
     def show_messages(self, instance):
         messages = [i[0] + ": " + i[1] for i in self.db.get_messages()]
