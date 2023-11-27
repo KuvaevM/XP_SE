@@ -20,5 +20,6 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(retrieved_messages, messages)
 
+
 if __name__ == "__main__":
     unittest.main()

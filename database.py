@@ -1,7 +1,9 @@
 import sqlite3
 
+
 class Database:
-    def init(self, db_name='users.db'):
+
+    def __init__(self, db_name='users.db'):
         self.conn = sqlite3.connect(db_name)
         self.c = self.conn.cursor()
         self.create_tables()

@@ -172,5 +172,6 @@ class MyApp(App):
         self.root.clear_widgets()
         self.root.add_widget(self.start_page)
 
+
 if __name__ == '__main__':
     MyApp().run()
