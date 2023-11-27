@@ -97,12 +97,17 @@ class SignupPage(BoxLayout):
         back_btn.bind(on_press=self.app.show_start_page)
         self.add_widget(back_btn)
 
+
 class MessagePage(BoxLayout):
     def __init__(self, db, app, **kwargs):
         super(MessagePage, self).__init__(**kwargs)
         self.orientation = 'vertical'
         self.db = db
         self.app = app
+
+        self.add_widget(Label(text='Add a Title'))
+        self.title_input = TextInput(multiline=True)
+        self.add_widget(self.title_input)
 
         self.add_widget(Label(text='Add a Message'))
         self.message_input = TextInput(multiline=True)
@@ -122,8 +127,10 @@ class MessagePage(BoxLayout):
         self.add_back_button()
 
     def add_message(self, instance):
+        title = self.title_input.text
         message = self.message_input.text
-        self.db.add_message("mes", message)
+        self.db.add_message(title, message)
+        self.title_input.text = ''
         self.message_input.text = ''
         self.show_messages(instance)
 
