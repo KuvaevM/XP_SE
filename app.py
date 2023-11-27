@@ -3,6 +3,8 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
 
 from database import Database
@@ -98,6 +100,31 @@ class SignupPage(BoxLayout):
         self.add_widget(back_btn)
 
 
+class MessagesWindow(BoxLayout):
+    def __init__(self, messages, **kwargs):
+        super(MessagesWindow, self).__init__(**kwargs)
+        self.orientation = 'vertical'
+
+        scroll_view = ScrollView()
+
+        box_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=5)
+
+        self.messages = {message[0]: message[1] for message in messages}
+
+        for message_title in self.messages.keys():
+            btn = Button(text=message_title, size_hint_y=None, height=40)
+            btn.bind(on_press=self.message_button_pressed)
+            box_layout.add_widget(btn)
+
+        scroll_view.add_widget(box_layout)
+        self.add_widget(scroll_view)
+
+    def message_button_pressed(self, instance):
+        selected_message_text = self.messages.get(instance.text, "Message not found")
+        popup = Popup(title=instance.text, content=Label(text=selected_message_text), size_hint=(None, None), size=(300, 200))
+        popup.open()
+
+
 class MessagePage(BoxLayout):
     def __init__(self, db, app, **kwargs):
         super(MessagePage, self).__init__(**kwargs)
@@ -118,7 +145,7 @@ class MessagePage(BoxLayout):
         self.add_widget(self.add_message_btn)
 
         self.show_messages_btn = Button(text='Show Messages')
-        self.show_messages_btn.bind(on_press=self.show_messages)
+        self.show_messages_btn.bind(on_press=self.show_messages_popup)
         self.add_widget(self.show_messages_btn)
 
         self.messages_label = Label(text='')
@@ -135,8 +162,15 @@ class MessagePage(BoxLayout):
         self.show_messages(instance)
 
     def show_messages(self, instance):
-        messages = self.db.get_messages()
+        messages = [i[0] + ": " + i[1] for i in self.db.get_messages()]
         self.messages_label.text = '\n'.join(messages)
+
+    def show_messages_popup(self, instance):
+        messages = self.db.get_messages()
+
+        messages_window = MessagesWindow(messages)
+        popup = Popup(title='Messages', content=messages_window, size_hint=(None, None), size=(400, 400))
+        popup.open()
 
     def add_back_button(self):
         back_btn = Button(text='Back')

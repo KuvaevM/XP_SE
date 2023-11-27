@@ -55,7 +55,7 @@ class Database:
 
     def get_messages(self):
         self.c.execute("SELECT * FROM messages")
-        return [message[0] + ": " + message[1] for message in self.c.fetchall()]
+        return [(message[0], message[1]) for message in self.c.fetchall()]
 
     def delete_message(self, title, message):
         self.c.execute("DELETE FROM messages WHERE title=? AND message=?", (title, message))
