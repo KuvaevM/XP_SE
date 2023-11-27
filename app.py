@@ -9,6 +9,7 @@ from database import Database
 
 kivy.require('1.11.1')
 
+
 class LoginPage(BoxLayout):
     def __init__(self, db, app, **kwargs):
         super(LoginPage, self).__init__(**kwargs)
