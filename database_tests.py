@@ -29,15 +29,12 @@ class TestDatabase(unittest.TestCase):
 
         retrieved_users = self.db.get_users()
 
-        # Check the equality of logins and verify passwords using bcrypt.checkpw
         for expected_user, retrieved_user in zip(users, retrieved_users):
             expected_login, expected_password = expected_user
             retrieved_login, retrieved_hashed_password = retrieved_user
 
-            # Check login equality
             self.assertEqual(expected_login, retrieved_login)
 
-            # Verify password using bcrypt.checkpw
             self.assertTrue(bcrypt.checkpw(expected_password.encode('utf-8'), retrieved_hashed_password))
 
     def test_validate_user(self):

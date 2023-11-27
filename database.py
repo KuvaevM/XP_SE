@@ -15,7 +15,7 @@ class Database:
 
     def create_tables(self):
         self.c.execute('CREATE TABLE IF NOT EXISTS users (login TEXT, password TEXT)')
-        self.c.execute('CREATE TABLE IF NOT EXISTS messages (message TEXT)')
+        self.c.execute('CREATE TABLE IF NOT EXISTS messages (title TEXT, message TEXT)')
         self.conn.commit()
 
     def validate_user(self, user, password):
@@ -49,13 +49,13 @@ class Database:
 
         return users
 
-    def add_message(self, message):
-        self.c.execute("INSERT INTO messages VALUES (?)", (message,))
+    def add_message(self, title, message):
+        self.c.execute("INSERT INTO messages VALUES (?, ?)", (title, message))
         self.conn.commit()
 
     def get_messages(self):
         self.c.execute("SELECT * FROM messages")
-        return [message[0] for message in self.c.fetchall()]
+        return [message[1] for message in self.c.fetchall()]
 
     def close(self):
         self.conn.close()

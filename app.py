@@ -123,9 +123,9 @@ class MessagePage(BoxLayout):
 
     def add_message(self, instance):
         message = self.message_input.text
-        self.db.add_message(message)
+        self.db.add_message("mes", message)
         self.message_input.text = ''
-        self.show_messages(instance)  # Automatically show messages after adding a new one
+        self.show_messages(instance)
 
     def show_messages(self, instance):
         messages = self.db.get_messages()
